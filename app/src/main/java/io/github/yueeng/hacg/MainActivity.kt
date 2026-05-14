@@ -184,6 +184,12 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, FavoriteActivity::class.java))
             }
 
+            R.id.theme_mode -> true.also {
+                val mode = getString(ThemeMode.cycle())
+                toast(getString(R.string.app_theme_changed, mode))
+                ThemeMode.applySaved()
+            }
+
             R.id.user -> true.also {
                 startActivity(Intent(this, WebActivity::class.java).apply {
                     if (user != 0) putExtra("url", "${HAcg.philosophy}/profile/$user")

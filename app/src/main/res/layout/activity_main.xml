@@ -29,6 +29,8 @@
             android:layout_height="wrap_content"
             app:layout_scrollFlags="enterAlways"
             app:tabIndicatorColor="@color/accent"
+            app:tabIndicatorAnimationMode="elastic"
+            app:tabIndicatorFullWidth="false"
             app:tabMode="scrollable" />
     </com.google.android.material.appbar.AppBarLayout>
 

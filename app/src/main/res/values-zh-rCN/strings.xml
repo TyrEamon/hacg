@@ -29,6 +29,11 @@
     <string name="app_search_title">搜索：%1$s</string>
     <string name="app_settings">设置</string>
     <string name="app_share">分享</string>
+    <string name="app_theme_changed">已切换：%1$s</string>
+    <string name="app_theme_day">白天模式</string>
+    <string name="app_theme_mode">日夜模式</string>
+    <string name="app_theme_night">夜间模式</string>
+    <string name="app_theme_system">跟随系统</string>
     <string name="app_update">更新</string>
     <string name="app_update_check">检查更新</string>
     <string name="app_update_new">从 %1$s 升级到 %2$s。</string>

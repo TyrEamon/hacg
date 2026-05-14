@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#1D211A</color>
+    <color name="primary_pressed">#E1E4D9</color>
+    <color name="primary_dark">#0C0F09</color>
+    <color name="ripple">#AAD290</color>
+    <color name="accent">#AAD290</color>
+    <color name="accent_pressed">#C5EFAA</color>
+
+    <color name="transparent">#0000</color>
+    <color name="background">#11140E</color>
+
+    <color name="text_color_title">#E1E4D9</color>
+    <color name="text_color_content">#C3C8BB</color>
+    <color name="text_color_summary">#8D9286</color>
+</resources>

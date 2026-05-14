@@ -27,6 +27,10 @@
         android:title="@string/favorite_title"
         app:showAsAction="never" />
     <item
+        android:id="@+id/theme_mode"
+        android:title="@string/app_theme_mode"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/settings"
         android:title="@string/settings_host"
         app:showAsAction="never" />

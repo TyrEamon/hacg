@@ -35,6 +35,7 @@ import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.IntentCompat
@@ -144,6 +145,46 @@ class HacgAppGlideModule : AppGlideModule() {
 fun RequestBuilder<Drawable>.crossFade(): RequestBuilder<Drawable> =
     this.transition(DrawableTransitionOptions.withCrossFade())
 
+object ThemeMode {
+    private const val KEY = "theme.mode"
+    private const val SYSTEM = 0
+    private const val DAY = 1
+    private const val NIGHT = 2
+
+    private val preference
+        get() = PreferenceManager.getDefaultSharedPreferences(HAcgApplication.instance)
+
+    private var current: Int
+        get() = preference.getInt(KEY, SYSTEM)
+        set(value) = preference.edit().putInt(KEY, value).apply()
+
+    fun applySaved() {
+        AppCompatDelegate.setDefaultNightMode(current.delegateMode())
+    }
+
+    fun cycle(): Int {
+        val next = when (current) {
+            SYSTEM -> DAY
+            DAY -> NIGHT
+            else -> SYSTEM
+        }
+        current = next
+        return next.label()
+    }
+
+    private fun Int.delegateMode(): Int = when (this) {
+        DAY -> AppCompatDelegate.MODE_NIGHT_NO
+        NIGHT -> AppCompatDelegate.MODE_NIGHT_YES
+        else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+    }
+
+    private fun Int.label(): Int = when (this) {
+        DAY -> R.string.app_theme_day
+        NIGHT -> R.string.app_theme_night
+        else -> R.string.app_theme_system
+    }
+}
+
 class HAcgApplication : Application() {
     companion object {
 
@@ -154,6 +195,11 @@ class HAcgApplication : Application() {
 
     init {
         _instance = this
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        ThemeMode.applySaved()
     }
 }
 
