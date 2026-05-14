@@ -11,16 +11,19 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/primary">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary"
             app:layout_collapseMode="pin"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
             app:navigationContentDescription="@string/favorite_title"
             app:navigationIcon="@mipmap/ic_launcher_round_icon"
+            app:popupTheme="@style/ThemeOverlay.HAcg.AppBar"
             app:titleTextColor="@color/toolbar_foreground"
             app:title="@string/app_name"
             tools:menu="@menu/menu_main" />
@@ -29,6 +32,7 @@
             android:id="@+id/tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@color/primary"
             app:layout_scrollFlags="enterAlways"
             app:tabIndicatorColor="@color/accent"
             app:tabIndicatorAnimationMode="elastic"

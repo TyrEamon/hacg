@@ -37,8 +37,12 @@
     </style>
 
     <style name="ThemeOverlay.HAcg.AppBar" parent="ThemeOverlay.MaterialComponents.Light">
+        <item name="android:colorBackground">@color/primary</item>
+        <item name="android:popupBackground">@color/primary</item>
         <item name="colorControlNormal">@color/toolbar_foreground</item>
         <item name="colorOnPrimary">@color/toolbar_foreground</item>
+        <item name="colorOnSurface">@color/toolbar_foreground</item>
+        <item name="colorSurface">@color/primary</item>
         <item name="android:textColorPrimary">@color/toolbar_foreground</item>
         <item name="android:textColorSecondary">@color/toolbar_foreground_muted</item>
     </style>
