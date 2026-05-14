@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater).apply {
             setSupportActionBar(toolbar)
-            toolbarFavorites.setOnClickListener {
+            toolbar.setNavigationOnClickListener {
                 startActivity(Intent(this@MainActivity, FavoriteActivity::class.java))
             }
             container.adapter = ArticleFragmentAdapter(this@MainActivity)
