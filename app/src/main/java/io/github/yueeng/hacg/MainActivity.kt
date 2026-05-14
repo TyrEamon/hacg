@@ -485,7 +485,7 @@ class ArticleFragment : Fragment() {
         }.root
 
     class ArticleHolder(private val binding: ArticleItemBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
-        private val previewTagChars = 60
+        private val previewTagChars = 75
         private val datafmt = SimpleDateFormat("yyyy-MM-dd hh:ss", Locale.getDefault())
         private val context = binding.root.context
         private var tagsExpanded = false
