@@ -162,43 +162,42 @@ class InfoWebFragment : Fragment() {
                 syncFavoriteLinks()
             }
             binding.button5.setOnClickListener(object : View.OnClickListener {
-                val max = 3
-                var magnet = 1
+                var magnet = 0
                 var toast: Toast? = null
 
-                override fun onClick(v: View): Unit = when {
-                    magnet == max -> {
-                        val magnets = viewModel.magnet.value ?: emptyList()
-                        MaterialAlertDialogBuilder(activity!!)
-                            .setTitle(R.string.app_magnet)
-                            .setSingleChoiceItems(magnets.map { m -> "${if (m.contains(",")) "baidu" else "magnet"}:$m" }.toTypedArray(), 0, null)
-                            .setNegativeButton(R.string.app_cancel, null)
-                            .setPositiveButton(R.string.app_open) { d, _ ->
-                                val pos = (d as AlertDialog).listView.checkedItemPosition
-                                val item = magnets[pos]
-                                val link = if (item.contains(",")) {
-                                    val baidu = item.split(",")
-                                    context?.clipboard(getString(R.string.app_magnet), baidu.last())
-                                    "https://yun.baidu.com/s/${baidu.first()}"
-                                } else "magnet:?xt=urn:btih:${magnets[pos]}"
-                                startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, Uri.parse(link)), getString(R.string.app_magnet)))
-                            }
-                            .setNeutralButton(R.string.app_copy) { d, _ ->
-                                val pos = (d as AlertDialog).listView.checkedItemPosition
-                                val item = magnets[pos]
-                                val link = if (item.contains(",")) "https://yun.baidu.com/s/${item.split(",").first()}" else "magnet:?xt=urn:btih:${magnets[pos]}"
-                                context?.clipboard(getString(R.string.app_magnet), link)
-                            }.create().show()
-                        binding.menu1.close(true)
-                    }
+                fun showMagnets() {
+                    val magnets = viewModel.magnet.value ?: emptyList()
+                    MaterialAlertDialogBuilder(activity!!)
+                        .setTitle(R.string.app_magnet)
+                        .setSingleChoiceItems(magnets.map { m -> "${if (m.contains(",")) "baidu" else "magnet"}:$m" }.toTypedArray(), 0, null)
+                        .setNegativeButton(R.string.app_cancel, null)
+                        .setPositiveButton(R.string.app_open) { d, _ ->
+                            val pos = (d as AlertDialog).listView.checkedItemPosition
+                            val item = magnets[pos]
+                            val link = if (item.contains(",")) {
+                                val baidu = item.split(",")
+                                context?.clipboard(getString(R.string.app_magnet), baidu.last())
+                                "https://yun.baidu.com/s/${baidu.first()}"
+                            } else "magnet:?xt=urn:btih:${magnets[pos]}"
+                            startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW, Uri.parse(link)), getString(R.string.app_magnet)))
+                        }
+                        .setNeutralButton(R.string.app_copy) { d, _ ->
+                            val pos = (d as AlertDialog).listView.checkedItemPosition
+                            val item = magnets[pos]
+                            val link = if (item.contains(",")) "https://yun.baidu.com/s/${item.split(",").first()}" else "magnet:?xt=urn:btih:${magnets[pos]}"
+                            context?.clipboard(getString(R.string.app_magnet), link)
+                        }.create().show()
+                    binding.menu1.close(true)
+                }
 
-                    magnet < max -> {
-                        magnet += 1
+                override fun onClick(v: View) {
+                    magnet += 1
+                    if (magnet == 1) {
                         toast?.cancel()
-                        toast = Toast.makeText(activity!!, (0 until magnet).joinToString("") { "..." }, Toast.LENGTH_SHORT).also { t -> t.show() }
+                        toast = Toast.makeText(activity!!, "杂鱼~杂~鱼!!", Toast.LENGTH_SHORT).also { t -> t.show() }
+                    } else {
+                        showMagnets()
                     }
-
-                    else -> Unit
                 }
             })
             CookieManager.getInstance().acceptThirdPartyCookies(binding.web)
