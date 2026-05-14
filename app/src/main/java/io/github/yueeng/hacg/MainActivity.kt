@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
-private fun AppCompatActivity.setupSearchView(search: SearchView, initialQuery: String? = null) {
+private fun AppCompatActivity.setupSearchView(search: SearchView, initialQuery: String? = null, collapseOnSubmit: Boolean = false) {
     val manager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
     val info = manager.getSearchableInfo(ComponentName(this, ListActivity::class.java))
     search.setSearchableInfo(info)
@@ -59,7 +59,7 @@ private fun AppCompatActivity.setupSearchView(search: SearchView, initialQuery: 
                 return true
             }
             startActivity(Intent(Intent.ACTION_SEARCH).setClass(this@setupSearchView, ListActivity::class.java).putExtra(SearchManager.QUERY, key))
-            search.clearFocus()
+            if (collapseOnSubmit) search.onActionViewCollapsed() else search.clearFocus()
             return true
         }
 
@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         val search = menu.findItem(R.id.search).actionView as SearchView
-        setupSearchView(search)
+        setupSearchView(search, collapseOnSubmit = true)
         return super.onCreateOptionsMenu(menu)
     }
 
