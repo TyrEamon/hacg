@@ -11,6 +11,4 @@
     android:paddingBottom="8dp"
     android:drawableStart="?android:attr/listChoiceIndicatorSingle"
     android:drawablePadding="12dp"
-    android:maxLines="2"
-    android:ellipsize="end"
     android:textSize="15sp" />
