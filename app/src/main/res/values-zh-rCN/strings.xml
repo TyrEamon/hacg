@@ -25,6 +25,8 @@
     <string name="app_save">保存</string>
     <string name="app_search">搜索</string>
     <string name="app_search_clear">清除搜索记录</string>
+    <string name="app_search_empty">请输入搜索内容</string>
+    <string name="app_search_title">搜索：%1$s</string>
     <string name="app_settings">设置</string>
     <string name="app_share">分享</string>
     <string name="app_update">更新</string>

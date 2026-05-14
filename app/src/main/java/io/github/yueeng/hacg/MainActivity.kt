@@ -46,6 +46,27 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+private fun AppCompatActivity.setupSearchView(search: SearchView, initialQuery: String? = null) {
+    val manager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+    val info = manager.getSearchableInfo(ComponentName(this, ListActivity::class.java))
+    search.setSearchableInfo(info)
+    initialQuery?.let { search.setQuery(it, false) }
+    search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        override fun onQueryTextSubmit(query: String?): Boolean {
+            val key = query?.trim().orEmpty()
+            if (key.isEmpty()) {
+                toast(R.string.app_search_empty)
+                return true
+            }
+            startActivity(Intent(Intent.ACTION_SEARCH).setClass(this@setupSearchView, ListActivity::class.java).putExtra(SearchManager.QUERY, key))
+            search.clearFocus()
+            return true
+        }
+
+        override fun onQueryTextChange(newText: String?): Boolean = false
+    })
+}
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,9 +137,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         val search = menu.findItem(R.id.search).actionView as SearchView
-        val manager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val info = manager.getSearchableInfo(ComponentName(this, ListActivity::class.java))
-        search.setSearchableInfo(info)
+        setupSearchView(search)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -184,6 +203,8 @@ class MainActivity : AppCompatActivity() {
 }
 
 class ListActivity : SwipeFinishActivity() {
+    private var searchQuery: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityListBinding.inflate(layoutInflater)
@@ -194,10 +215,15 @@ class ListActivity : SwipeFinishActivity() {
                 when {
                     i.hasExtra("url") -> (i.getStringExtra("url") to i.getStringExtra("name"))
                     i.hasExtra(SearchManager.QUERY) -> {
-                        val key = i.getStringExtra(SearchManager.QUERY)
-                        val suggestions = SearchRecentSuggestions(this, SearchHistoryProvider.AUTHORITY, SearchHistoryProvider.MODE)
-                        suggestions.saveRecentQuery(key, null)
-                        ("""${HAcg.wordpress}/?s=${Uri.encode(key)}&submit=%E6%90%9C%E7%B4%A2""" to key)
+                        val key = i.getStringExtra(SearchManager.QUERY)?.trim().orEmpty()
+                        if (key.isEmpty()) {
+                            null to null
+                        } else {
+                            searchQuery = key
+                            val suggestions = SearchRecentSuggestions(this, SearchHistoryProvider.AUTHORITY, SearchHistoryProvider.MODE)
+                            suggestions.saveRecentQuery(key, null)
+                            ("""${HAcg.wordpress}/?s=${Uri.encode(key)}&submit=%E6%90%9C%E7%B4%A2""" to getString(R.string.app_search_title, key))
+                        }
                     }
 
                     else -> null to null
@@ -216,10 +242,22 @@ class ListActivity : SwipeFinishActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_list, menu)
+        val search = menu.findItem(R.id.search).actionView as SearchView
+        setupSearchView(search, searchQuery)
+        return super.onCreateOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> true.also {
                 onBackPressedDispatcher.onBackPressed()
+            }
+
+            R.id.search_clear -> true.also {
+                val suggestions = SearchRecentSuggestions(this, SearchHistoryProvider.AUTHORITY, SearchHistoryProvider.MODE)
+                suggestions.clearHistory()
             }
 
             else -> super.onOptionsItemSelected(item)

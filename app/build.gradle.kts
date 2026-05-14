@@ -12,6 +12,7 @@ plugins {
 val baseVersionCode = 42
 val ciVersionPrefix = "1.5"
 val localVersionName = "1.5.6"
+val appId = "io.github.yueeng.hacg"
 
 android {
     namespace = "io.github.yueeng.hacg"
@@ -19,11 +20,12 @@ android {
     buildToolsVersion = "36.0.0"
 
     defaultConfig {
-        applicationId = "io.github.yueeng.hacg"
+        applicationId = appId
         minSdk = 23
         targetSdk = 35
         versionCode = providers.environmentVariable("CI_VERSION_CODE").orNull?.toIntOrNull() ?: baseVersionCode
         versionName = providers.environmentVariable("CI_VERSION_NAME").orNull ?: localVersionName
+        resValue("string", "search_suggest_authority", "$appId.SuggestionProvider")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     androidResources {
