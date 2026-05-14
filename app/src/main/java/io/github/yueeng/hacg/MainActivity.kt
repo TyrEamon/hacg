@@ -84,6 +84,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater).apply {
             setSupportActionBar(toolbar)
+            toolbarFavorites.setOnClickListener {
+                startActivity(Intent(this@MainActivity, FavoriteActivity::class.java))
+            }
             container.adapter = ArticleFragmentAdapter(this@MainActivity)
             TabLayoutMediator(tab, container) { tab, position -> tab.text = (container.adapter as ArticleFragmentAdapter).getPageTitle(position) }.attach()
         }
