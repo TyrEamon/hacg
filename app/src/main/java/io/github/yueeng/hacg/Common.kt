@@ -408,6 +408,10 @@ abstract class DataAdapter<V, VH : RecyclerView.ViewHolder>(private val diffCall
         differ.submitList(data.toMutableList().apply { addAll(v) })
     }
 
+    open fun replaceAll(v: List<V>): DataAdapter<V, VH> = apply {
+        differ.submitList(v.toMutableList())
+    }
+
     open fun remove(v: V): DataAdapter<V, VH> = apply {
         differ.submitList(data.toMutableList().apply { remove(v) })
     }

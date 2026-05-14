@@ -302,8 +302,7 @@ class FavoriteFragment : Fragment() {
         val view = view ?: return
         val binding = FragmentListBinding.bind(view)
         val items = Favorites.all()
-        adapter.clear()
-        adapter.addAll(items)
+        adapter.replaceAll(items)
         binding.image1.visibility = if (items.isEmpty()) View.VISIBLE else View.INVISIBLE
         binding.swipe.isRefreshing = false
     }
