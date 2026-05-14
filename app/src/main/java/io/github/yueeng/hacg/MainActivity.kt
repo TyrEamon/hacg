@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SearchRecentSuggestionsProvider
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -23,7 +24,9 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -81,6 +84,19 @@ private fun AppCompatActivity.setupSearchView(searchItem: MenuItem, initialQuery
 
         override fun onQueryTextChange(newText: String?): Boolean = false
     })
+}
+
+private fun Drawable.tinted(color: Int): Drawable =
+    DrawableCompat.wrap(mutate()).also { DrawableCompat.setTint(it, color) }
+
+private fun AppCompatActivity.tintToolbarIcons(menu: Menu, vararg itemIds: Int) {
+    val color = getColor(R.color.toolbar_foreground)
+    itemIds.forEach { id ->
+        menu.findItem(id)?.let { item -> item.icon = item.icon?.tinted(color) }
+    }
+    findViewById<Toolbar>(R.id.toolbar)?.let { toolbar ->
+        toolbar.overflowIcon = toolbar.overflowIcon?.tinted(color)
+    }
 }
 
 class MainActivity : AppCompatActivity() {
@@ -253,6 +269,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         setupSearchView(menu.findItem(R.id.search), collapseOnSubmit = true)
+        tintToolbarIcons(menu, R.id.search, R.id.user)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -366,6 +383,7 @@ class ListActivity : SwipeFinishActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_list, menu)
         setupSearchView(menu.findItem(R.id.search), searchQuery)
+        tintToolbarIcons(menu, R.id.search)
         return super.onCreateOptionsMenu(menu)
     }
 

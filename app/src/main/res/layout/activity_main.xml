@@ -19,7 +19,6 @@
             android:layout_height="?attr/actionBarSize"
             app:layout_collapseMode="pin"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
-            app:menuIconTint="@color/toolbar_foreground"
             app:navigationContentDescription="@string/favorite_title"
             app:navigationIcon="@mipmap/ic_launcher_round_icon"
             app:titleTextColor="@color/toolbar_foreground"
