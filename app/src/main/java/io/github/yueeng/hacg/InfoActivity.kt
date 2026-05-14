@@ -172,12 +172,12 @@ class InfoWebFragment : Fragment() {
                     val accent = requireContext().getColor(R.color.accent)
                     val itemText = requireContext().getColor(R.color.text_color_title)
                     val items = magnets.map { m -> "${if (m.contains(",")) "baidu" else "magnet"}:$m" }
-                    val adapter = object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_single_choice, items) {
+                    val adapter = object : ArrayAdapter<String>(requireContext(), R.layout.item_magnet_choice, items) {
                         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
                             super.getView(position, convertView, parent).also { view ->
                                 (view as? CheckedTextView)?.apply {
                                     setTextColor(itemText)
-                                    checkMarkTintList = ColorStateList.valueOf(accent)
+                                    compoundDrawableTintList = ColorStateList.valueOf(accent)
                                 }
                             }
                     }
