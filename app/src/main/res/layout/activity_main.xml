@@ -19,8 +19,10 @@
             android:layout_height="?attr/actionBarSize"
             app:layout_collapseMode="pin"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
+            app:menuIconTint="@color/toolbar_foreground"
             app:navigationContentDescription="@string/favorite_title"
             app:navigationIcon="@mipmap/ic_launcher_round_icon"
+            app:titleTextColor="@color/toolbar_foreground"
             app:title="@string/app_name"
             tools:menu="@menu/menu_main" />
 
@@ -32,7 +34,9 @@
             app:tabIndicatorColor="@color/accent"
             app:tabIndicatorAnimationMode="elastic"
             app:tabIndicatorFullWidth="false"
-            app:tabMode="scrollable" />
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/toolbar_foreground"
+            app:tabTextColor="@color/toolbar_foreground_muted" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.viewpager2.widget.ViewPager2

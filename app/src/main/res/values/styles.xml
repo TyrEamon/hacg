@@ -10,6 +10,7 @@
         <!-- colorAccent is used as the default value for colorControlActivated
          which is used to tint widgets -->
         <item name="colorAccent">@color/accent</item>
+        <item name="colorOnPrimary">@color/toolbar_foreground</item>
         <!-- You can also set colorControlNormal, colorControlActivated
          colorControlHighlight & colorSwitchThumbNormal. -->
         <item name="android:windowBackground">@color/background</item>
@@ -32,6 +33,13 @@
     </style>
 
     <style name="AppThemeOverlayAppbarLayoutStyle" parent="Widget.MaterialComponents.AppBarLayout.Primary">
-        <item name="materialThemeOverlay">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.HAcg.AppBar</item>
+    </style>
+
+    <style name="ThemeOverlay.HAcg.AppBar" parent="ThemeOverlay.MaterialComponents.Light">
+        <item name="colorControlNormal">@color/toolbar_foreground</item>
+        <item name="colorOnPrimary">@color/toolbar_foreground</item>
+        <item name="android:textColorPrimary">@color/toolbar_foreground</item>
+        <item name="android:textColorSecondary">@color/toolbar_foreground_muted</item>
     </style>
 </resources>

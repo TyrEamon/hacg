@@ -6,6 +6,8 @@
     <color name="ripple">#AAD290</color>
     <color name="accent">#AAD290</color>
     <color name="accent_pressed">#C5EFAA</color>
+    <color name="toolbar_foreground">#E1E4D9</color>
+    <color name="toolbar_foreground_muted">#C3C8BB</color>
 
     <color name="transparent">#0000</color>
     <color name="background">#11140E</color>

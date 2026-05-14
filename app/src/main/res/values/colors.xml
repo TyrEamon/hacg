@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#F8F9FB</color>
-    <color name="primary_pressed">#EEF1F5</color>
-    <color name="primary_dark">#EEF1F4</color>
+    <color name="primary">#FFFFFF</color>
+    <color name="primary_pressed">#FFFFFF</color>
+    <color name="primary_dark">#FFFFFF</color>
     <color name="ripple">#D7DEE8</color>
     <color name="accent">#222222</color>
     <color name="accent_pressed">#555555</color>
+    <color name="toolbar_foreground">#1F2328</color>
+    <color name="toolbar_foreground_muted">#5E6673</color>
 
     <color name="transparent">#0000</color>
     <color name="background">#FFFFFF</color>
