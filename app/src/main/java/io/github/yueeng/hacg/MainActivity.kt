@@ -497,9 +497,14 @@ class ArticleFragment : Fragment() {
                 binding.text1.setTextColor(color)
                 binding.text2.text = item.content
                 binding.text2.visibility = if (item.content?.isNotEmpty() == true) View.VISIBLE else View.GONE
-                val span = item.expend.spannable(string = { it.name }, call = { tag -> context.startActivity(Intent(context, ListActivity::class.java).putExtra("url", tag.url).putExtra("name", tag.name)) })
+                val tags = item.previewTags()
+                val span = tags.spannable(
+                    string = { it.name },
+                    call = { tag -> context.startActivity(Intent(context, ListActivity::class.java).putExtra("url", tag.url).putExtra("name", tag.name)) },
+                    clickable = { it.url.isNotBlank() }
+                )
                 binding.text3.text = span
-                binding.text3.visibility = if (item.tags.isNotEmpty()) View.VISIBLE else View.GONE
+                binding.text3.visibility = if (tags.isNotEmpty()) View.VISIBLE else View.GONE
                 binding.text4.text = context.getString(R.string.app_list_time, datafmt.format(item.time ?: Date()), item.author?.name ?: "", item.comments)
                 binding.text4.setTextColor(color)
                 binding.text4.visibility = if (binding.text4.text.isNullOrEmpty()) View.GONE else View.VISIBLE
@@ -514,6 +519,20 @@ class ArticleFragment : Fragment() {
 
         override fun onClick(p0: View?) {
             context.startActivity(Intent(context, InfoActivity::class.java).putExtra("article", article as Parcelable))
+        }
+
+        private fun Article.previewTags(): List<Tag> {
+            val all = expend
+            val tags = mutableListOf<Tag>()
+            var chars = 0
+            for (tag in all) {
+                val next = chars + tag.name.length + if (tags.isEmpty()) 0 else 1
+                if (tags.isNotEmpty() && (tags.size >= 10 || next > 45)) break
+                tags += tag
+                chars = next
+            }
+            val hidden = all.size - tags.size
+            return if (hidden > 0) tags + Tag("+$hidden", "") else tags
         }
     }
 

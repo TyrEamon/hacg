@@ -583,14 +583,19 @@ class TagClickableSpan<T>(private val tag: T, private val call: ((T) -> Unit)? =
     }
 }
 
-fun <T> List<T>.spannable(separator: CharSequence = " ", string: (T) -> String = { "$it" }, call: ((T) -> Unit)?): SpannableStringBuilder {
+fun <T> List<T>.spannable(
+    separator: CharSequence = " ",
+    string: (T) -> String = { "$it" },
+    call: ((T) -> Unit)?,
+    clickable: (T) -> Boolean = { true }
+): SpannableStringBuilder {
 
     val tags = this.joinToString(separator) { string(it) }
     val span = SpannableStringBuilder(tags)
     fold(0) { i, it ->
         val p = tags.indexOf(string(it), i)
         val e = p + string(it).length
-        if (call != null) span.setSpan(TagClickableSpan(it, call), p, e, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (call != null && clickable(it)) span.setSpan(TagClickableSpan(it, call), p, e, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         span.setSpan(RoundedBackgroundColorSpan(randomColor(0xBF)), p, e, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         e
     }

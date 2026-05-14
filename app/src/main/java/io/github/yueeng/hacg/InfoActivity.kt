@@ -13,6 +13,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.text.Html
 import android.view.*
 import android.webkit.*
 import android.widget.*
@@ -353,6 +354,7 @@ class InfoWebFragment : Fragment() {
                 val html = entry?.let {
                     activity?.resources?.openRawResource(R.raw.template)?.bufferedReader()?.readText()
                         ?.replace("{{title}}", article?.title ?: "")
+                        ?.replace("{{tags}}", article.tagsHtml())
                         ?.replace("{{body}}", entry.html())
                 }
                 val magnet = entry?.text()?.magnet()?.toList() ?: emptyList()
@@ -369,6 +371,17 @@ class InfoWebFragment : Fragment() {
                 }
                 viewModel.progress.postValue(false)
             }
+        }
+    }
+
+    private fun Article?.tagsHtml(): String {
+        val tags = this?.expend.orEmpty()
+        if (tags.isEmpty()) return ""
+        return tags.joinToString(" ", prefix = """<div class="tags">""", postfix = "</div>") { tag ->
+            val color = "#%06X".format(randomColor() and 0xFFFFFF)
+            val url = Html.escapeHtml(tag.url)
+            val name = Html.escapeHtml(tag.name)
+            """<a class="tag" style="background-color:$color" href="$url">$name</a>"""
         }
     }
 }
