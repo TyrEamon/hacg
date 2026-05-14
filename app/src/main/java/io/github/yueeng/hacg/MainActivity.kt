@@ -485,26 +485,22 @@ class ArticleFragment : Fragment() {
         }.root
 
     class ArticleHolder(private val binding: ArticleItemBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+        private val previewTagChars = 60
         private val datafmt = SimpleDateFormat("yyyy-MM-dd hh:ss", Locale.getDefault())
         private val context = binding.root.context
+        private var tagsExpanded = false
         var article: Article? = null
             set(value) {
-                field = value
                 val item = value!!
+                if (field?.id != item.id || field?.link != item.link) tagsExpanded = false
+                field = value
                 binding.text1.text = item.title
                 binding.text1.visibility = if (item.title.isNotEmpty()) View.VISIBLE else View.GONE
                 val color = randomColor()
                 binding.text1.setTextColor(color)
                 binding.text2.text = item.content
                 binding.text2.visibility = if (item.content?.isNotEmpty() == true) View.VISIBLE else View.GONE
-                val tags = item.previewTags()
-                val span = tags.spannable(
-                    string = { it.name },
-                    call = { tag -> context.startActivity(Intent(context, ListActivity::class.java).putExtra("url", tag.url).putExtra("name", tag.name)) },
-                    clickable = { it.url.isNotBlank() }
-                )
-                binding.text3.text = span
-                binding.text3.visibility = if (tags.isNotEmpty()) View.VISIBLE else View.GONE
+                bindTags(item)
                 binding.text4.text = context.getString(R.string.app_list_time, datafmt.format(item.time ?: Date()), item.author?.name ?: "", item.comments)
                 binding.text4.setTextColor(color)
                 binding.text4.visibility = if (binding.text4.text.isNullOrEmpty()) View.GONE else View.VISIBLE
@@ -521,6 +517,24 @@ class ArticleFragment : Fragment() {
             context.startActivity(Intent(context, InfoActivity::class.java).putExtra("article", article as Parcelable))
         }
 
+        private fun bindTags(item: Article) {
+            val tags = if (tagsExpanded) item.expend else item.previewTags()
+            val span = tags.spannable(
+                string = { it.name },
+                call = { tag ->
+                    if (tag.url.isBlank()) {
+                        tagsExpanded = true
+                        bindTags(item)
+                    } else {
+                        context.startActivity(Intent(context, ListActivity::class.java).putExtra("url", tag.url).putExtra("name", tag.name))
+                    }
+                },
+                clickable = { it.url.isNotBlank() || it.name.startsWith("+") }
+            )
+            binding.text3.text = span
+            binding.text3.visibility = if (tags.isNotEmpty()) View.VISIBLE else View.GONE
+        }
+
         private fun Article.previewTags(): List<Tag> {
             val all = expend
             val tags = mutableListOf<Tag>()
@@ -529,7 +543,7 @@ class ArticleFragment : Fragment() {
                 val next = chars + tag.name.length + if (tags.isEmpty()) 0 else 1
                 tags += tag
                 chars = next
-                if (chars >= 45) break
+                if (chars >= previewTagChars) break
             }
             val hidden = all.size - tags.size
             return if (hidden > 0) tags + Tag("+$hidden", "") else tags
