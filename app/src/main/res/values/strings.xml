@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <resources>
     <string name="app_about">About</string>
+    <string name="app_about_fork">Personal relay build based on yueeng/hacg, with local favorites and sync additions.</string>
     <string name="app_cancel">Cancel</string>
     <string name="app_chrome">Open with browser</string>
     <string name="app_close">Close</string>

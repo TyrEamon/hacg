@@ -131,7 +131,9 @@ object HAcg {
     }
 
     val IsHttp: Regex = """^https?://.*$""".toRegex()
-    val RELEASE = "https://github.com/yueeng/hacg/releases"
+    val RELEASE_REPOSITORY = "TyrEamon/hacg"
+    val RELEASE_API = "https://api.github.com/repos/$RELEASE_REPOSITORY/releases/latest"
+    val RELEASE = "https://github.com/$RELEASE_REPOSITORY/releases"
 
     val web get() = "https://$host"
 
@@ -212,7 +214,7 @@ data class Version(val ver: List<Int>) {
 
     companion object {
         fun from(ver: String?) = try {
-            ver?.let { Version(ver) }
+            ver?.let { Version("""\d+(?:\.\d+)+""".toRegex().find(it)?.value ?: it) }
         } catch (_: Exception) {
             null
         }

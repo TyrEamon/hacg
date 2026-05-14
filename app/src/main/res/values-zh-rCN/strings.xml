@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
     <string name="app_about">关于</string>
+    <string name="app_about_fork">基于 yueeng/hacg 的个人接力构建，加入本地收藏和同步功能。</string>
     <string name="app_cancel">取消</string>
     <string name="app_chrome">使用浏览器打开</string>
     <string name="app_close">关闭</string>

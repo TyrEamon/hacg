@@ -116,7 +116,7 @@ jobs:
             echo "version_code=$version_code"
           } >> "$GITHUB_OUTPUT"
           cat > release-notes.md <<EOF
-          Automated ${BUILD_TYPE} APK build.
+          Automated ${BUILD_TYPE} APK build for a personal relay fork of yueeng/hacg.
 
           Version: ${version_name} (${version_code})
           Commit: ${GITHUB_SHA}

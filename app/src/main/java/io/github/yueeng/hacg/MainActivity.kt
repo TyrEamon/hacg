@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkVersion(toast: Boolean = false) = lifecycleScope.launch {
         repeatOnLifecycle(Lifecycle.State.CREATED) {
-            val release = "https://api.github.com/repos/yueeng/hacg/releases/latest".httpGetAwait()?.let {
+            val release = HAcg.RELEASE_API.httpGetAwait()?.let {
                 gson.fromJson(it.first, JGitHubRelease::class.java)
             }
             val ver = Version.from(release?.tagName)
@@ -170,6 +170,7 @@ class MainActivity : AppCompatActivity() {
             R.id.about -> true.also {
                 MaterialAlertDialogBuilder(this)
                     .setTitle("${getString(R.string.app_name)} ${version()}")
+                    .setMessage(R.string.app_about_fork)
                     .setItems(arrayOf(getString(R.string.app_name))) { _, _ -> openUri(HAcg.wordpress) }
                     .setPositiveButton(R.string.app_publish) { _, _ -> openUri(HAcg.RELEASE) }
                     .setNeutralButton(R.string.app_update_check) { _, _ -> checkVersion(true) }
