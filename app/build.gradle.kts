@@ -1,5 +1,6 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.google.devtools.ksp.KspExperimental
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -19,15 +20,17 @@ android {
         targetSdk = 35
         versionCode = 42
         versionName = "1.5.6"
-        resourceConfigurations.add("zh-rCN")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    val signingConfig = gradleLocalProperties(rootDir, providers)
+    androidResources {
+        localeFilters.add("zh-rCN")
+    }
+    val signingProperties = gradleLocalProperties(rootDir, providers)
     val hasReleaseSigning = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
-        .all { signingConfig.getProperty(it)?.isNotBlank() == true }
+        .all { signingProperties.getProperty(it)?.isNotBlank() == true }
     signingConfigs {
         if (hasReleaseSigning) create("release") {
-            val config = signingConfig
+            val config = signingProperties
             storeFile = file(config.getProperty("storeFile"))
             storePassword = config.getProperty("storePassword")
             keyAlias = config.getProperty("keyAlias")
@@ -50,9 +53,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     ksp {
         @OptIn(KspExperimental::class)
         useKsp2 = false
@@ -65,6 +65,12 @@ android {
                 outputFile.parentFile?.listFiles()?.forEach { it.copyTo(File(folder, it.name), true) }
             }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
