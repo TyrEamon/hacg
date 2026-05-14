@@ -40,6 +40,8 @@
     <string name="app_update_download_missing">No APK asset found in this release.</string>
     <string name="app_update_download_started">Downloading update APK</string>
     <string name="app_update_download_title">HAcg update APK</string>
+    <string name="app_update_install_failed">Cannot open installer</string>
+    <string name="app_update_install_permission">Please allow this app to install APKs, then return to continue.</string>
     <string name="app_update_new">Update from %1$s to %2$s</string>
     <string name="app_update_none">Version %1$s is newest.</string>
     <string name="app_user">User information</string>

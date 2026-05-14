@@ -40,6 +40,8 @@
     <string name="app_update_download_missing">这个 Release 里没有找到 APK。</string>
     <string name="app_update_download_started">开始下载更新 APK</string>
     <string name="app_update_download_title">琉璃神社更新 APK</string>
+    <string name="app_update_install_failed">无法打开安装器</string>
+    <string name="app_update_install_permission">请允许本应用安装 APK，返回后会继续弹出安装。</string>
     <string name="app_update_new">从 %1$s 升级到 %2$s。</string>
     <string name="app_update_none">版本 %1$s 已经是最新版本。</string>
     <string name="app_user">用户信息</string>

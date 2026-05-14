@@ -3,15 +3,19 @@ package io.github.yueeng.hacg
 import android.animation.ObjectAnimator
 import android.app.DownloadManager
 import android.app.SearchManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SearchRecentSuggestionsProvider
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Parcelable
 import android.provider.SearchRecentSuggestions
+import android.provider.Settings
 import android.text.method.LinkMovementMethod
 import android.util.TypedValue
 import android.view.*
@@ -80,6 +84,23 @@ private fun AppCompatActivity.setupSearchView(searchItem: MenuItem, initialQuery
 }
 
 class MainActivity : AppCompatActivity() {
+    private var pendingUpdateDownloadId = -1L
+    private val installPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (pendingUpdateDownloadId != -1L) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+                toast(R.string.app_update_install_failed)
+            } else {
+                installDownloadedUpdate(pendingUpdateDownloadId)
+            }
+        }
+    }
+    private val updateDownloadReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L) ?: -1L
+            if (id == pendingUpdateDownloadId) installDownloadedUpdate(id)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater).apply {
@@ -101,6 +122,22 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(updateDownloadReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(updateDownloadReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        unregisterReceiver(updateDownloadReceiver)
+        super.onStop()
     }
 
     private fun checkVersion(toast: Boolean = false) = lifecycleScope.launch {
@@ -149,10 +186,44 @@ class MainActivity : AppCompatActivity() {
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
             val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            manager.enqueue(request)
+            pendingUpdateDownloadId = manager.enqueue(request)
             toast(R.string.app_update_download_started)
         } catch (e: Exception) {
             toast(e.message ?: getString(R.string.app_update_download_failed))
+        }
+    }
+
+    private fun installDownloadedUpdate(downloadId: Long) {
+        val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val cursor = manager.query(DownloadManager.Query().setFilterById(downloadId)) ?: run {
+            toast(R.string.app_update_download_failed)
+            return
+        }
+        cursor.use {
+            if (!it.moveToFirst()) return
+            val status = it.getInt(it.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+            if (status != DownloadManager.STATUS_SUCCESSFUL) {
+                if (status == DownloadManager.STATUS_FAILED) toast(R.string.app_update_download_failed)
+                return
+            }
+        }
+        val apkUri = manager.getUriForDownloadedFile(downloadId) ?: run {
+            toast(R.string.app_update_download_failed)
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+            toast(R.string.app_update_install_permission)
+            installPermission.launch(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+            return
+        }
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(apkUri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            })
+            pendingUpdateDownloadId = -1L
+        } catch (e: Exception) {
+            toast(e.message ?: getString(R.string.app_update_install_failed))
         }
     }
 
