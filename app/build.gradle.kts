@@ -9,6 +9,10 @@ plugins {
     id("kotlin-parcelize")
 }
 
+val baseVersionCode = 42
+val ciVersionPrefix = "1.5"
+val localVersionName = "1.5.6"
+
 android {
     namespace = "io.github.yueeng.hacg"
     compileSdk = 36
@@ -18,8 +22,8 @@ android {
         applicationId = "io.github.yueeng.hacg"
         minSdk = 23
         targetSdk = 35
-        versionCode = 42
-        versionName = "1.5.6"
+        versionCode = providers.environmentVariable("CI_VERSION_CODE").orNull?.toIntOrNull() ?: baseVersionCode
+        versionName = providers.environmentVariable("CI_VERSION_NAME").orNull ?: localVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     androidResources {
