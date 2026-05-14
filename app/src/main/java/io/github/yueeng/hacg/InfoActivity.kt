@@ -388,9 +388,14 @@ class InfoWebFragment : Fragment() {
     }
 
     private fun Article.withFallbackTags(fallback: Article?): Article {
-        if (expend.isNotEmpty()) return this
         if (fallback == null || fallback.expend.isEmpty()) return this
-        return copy(author = fallback.author, category = fallback.category, tags = fallback.tags)
+        val mergedTags = (tags + fallback.tags)
+            .distinctBy { it.url.takeIf { url -> url.isNotBlank() } ?: it.name }
+        return copy(
+            author = author ?: fallback.author,
+            category = category ?: fallback.category,
+            tags = mergedTags
+        )
     }
 }
 
