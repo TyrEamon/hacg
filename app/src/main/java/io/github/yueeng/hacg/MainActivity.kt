@@ -100,7 +100,10 @@ private fun AppCompatActivity.tintToolbarIcons(menu: Menu, vararg itemIds: Int) 
 }
 
 class MainActivity : AppCompatActivity() {
-    private var pendingUpdateDownloadId = -1L
+    private var pendingUpdateDownloadId: Long
+        get() = getPreferences(Context.MODE_PRIVATE).getLong("pending_update_download_id", -1L)
+        set(value) = getPreferences(Context.MODE_PRIVATE).edit().putLong("pending_update_download_id", value).apply()
+
     private val installPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (pendingUpdateDownloadId != -1L) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
@@ -144,11 +147,12 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(updateDownloadReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(updateDownloadReceiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             @Suppress("DEPRECATION")
             registerReceiver(updateDownloadReceiver, filter)
         }
+        if (pendingUpdateDownloadId != -1L) installDownloadedUpdate(pendingUpdateDownloadId)
     }
 
     override fun onStop() {
