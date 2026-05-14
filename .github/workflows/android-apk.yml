@@ -45,17 +45,43 @@ jobs:
       - name: Prepare release signing
         shell: bash
         run: |
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > release.keystore
-            {
-              echo "storeFile=release.keystore"
-              echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
-              echo "keyAlias=$ANDROID_KEY_ALIAS"
-              echo "keyPassword=$ANDROID_KEY_PASSWORD"
-            } > local.properties
-          elif [ "$BUILD_TYPE" = "release" ]; then
-            echo "::warning::Release signing secrets are not configured. The release artifact will be unsigned."
+          set -euo pipefail
+          missing=()
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              missing+=("$name")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            if [ "$BUILD_TYPE" = "release" ]; then
+              echo "::error::Missing release signing secrets: ${missing[*]}"
+              exit 1
+            fi
+            exit 0
           fi
+
+          keystore_base64="$(printf '%s' "$ANDROID_KEYSTORE_BASE64" | sed 's/^ANDROID_KEYSTORE_BASE64=//' | tr -d '\r\n ')"
+          printf '%s' "$keystore_base64" | base64 --decode > release.keystore
+
+          if ! keytool -list -keystore release.keystore -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::Cannot open release.keystore with ANDROID_KEYSTORE_PASSWORD and ANDROID_KEY_ALIAS. Re-copy the signing secrets from the generated keystore artifact."
+            exit 1
+          fi
+
+          check_dir="$(mktemp -d)"
+          printf 'signing check' > "$check_dir/check.txt"
+          jar cf "$check_dir/check.jar" -C "$check_dir" check.txt
+          if ! jarsigner -keystore release.keystore -storepass "$ANDROID_KEYSTORE_PASSWORD" -keypass "$ANDROID_KEY_PASSWORD" "$check_dir/check.jar" "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::Cannot sign with ANDROID_KEY_PASSWORD. Re-copy ANDROID_KEY_PASSWORD from the generated keystore artifact."
+            exit 1
+          fi
+
+          {
+            echo "storeFile=release.keystore"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > local.properties
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
