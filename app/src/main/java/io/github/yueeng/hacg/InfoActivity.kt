@@ -332,6 +332,8 @@ class InfoWebFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 val dom = url.httpGetAwait()?.jsoup()
                 val article = dom?.select("article")?.firstOrNull()?.let { Article(it) }
+                    ?.withFallbackTags(viewModel.article.value)
+                    ?: viewModel.article.value
                 val entry = dom?.select(".entry-content")?.let { entry ->
                     val clean = Jsoup.clean(
                         entry.html(), url, Safelist.basicWithImages()
@@ -383,6 +385,12 @@ class InfoWebFragment : Fragment() {
             val name = Html.escapeHtml(tag.name)
             """<a class="tag" style="background-color:$color" href="$url">$name</a>"""
         }
+    }
+
+    private fun Article.withFallbackTags(fallback: Article?): Article {
+        if (expend.isNotEmpty()) return this
+        if (fallback == null || fallback.expend.isEmpty()) return this
+        return copy(author = fallback.author, category = fallback.category, tags = fallback.tags)
     }
 }
 
