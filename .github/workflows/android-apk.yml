@@ -12,6 +12,9 @@ on:
           - debug
           - release
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -71,3 +74,46 @@ jobs:
             app/build/outputs/apk/**/*.apk
             release/*.apk
           if-no-files-found: error
+
+      - name: Prepare release metadata
+        id: release
+        shell: bash
+        run: |
+          version_name="$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts | head -n 1)"
+          version_code="$(sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' app/build.gradle.kts | head -n 1)"
+          tag="v${version_name}-${BUILD_TYPE}.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          title="HAcg ${version_name} ${BUILD_TYPE} build ${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          {
+            echo "tag=$tag"
+            echo "title=$title"
+            echo "version_name=$version_name"
+            echo "version_code=$version_code"
+          } >> "$GITHUB_OUTPUT"
+          cat > release-notes.md <<EOF
+          Automated ${BUILD_TYPE} APK build.
+
+          Version: ${version_name} (${version_code})
+          Commit: ${GITHUB_SHA}
+          Workflow run: ${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}
+          EOF
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          assets=(app/build/outputs/apk/**/*.apk)
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "No APK files found."
+            exit 1
+          fi
+          flags=()
+          if [ "$BUILD_TYPE" != "release" ]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "${{ steps.release.outputs.tag }}" "${assets[@]}" \
+            --title "${{ steps.release.outputs.title }}" \
+            --notes-file release-notes.md \
+            --target "$GITHUB_SHA" \
+            "${flags[@]}"
