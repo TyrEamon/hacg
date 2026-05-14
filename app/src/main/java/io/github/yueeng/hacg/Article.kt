@@ -18,7 +18,6 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.jsoup.nodes.Element
 import java.io.File
-import java.net.URI
 import java.util.*
 import kotlin.math.min
 
@@ -329,36 +328,9 @@ data class Article(
         private val URL: Regex = """/wp/(\d+)\.html""".toRegex()
         fun getIdFromUrl(str: String?) = str?.let { s -> URL.find(s)?.let { it.groups[1]?.value?.toInt() } }
         private val LIST = listOf("/wp/tag/", "/wp/author/", "/wp/?s=")
-        private val IMAGE_SELECTOR = ".entry-content img, .entry-summary img, .post-thumbnail img, img.wp-post-image, figure img"
         fun isList(url: String): Boolean = Uri.parse(url).path?.let { path ->
             HAcg.categories.any { path == it.first } || LIST.any { path.startsWith(it) }
         } ?: false
-
-        private fun image(e: Element): String =
-            e.select(IMAGE_SELECTOR).asSequence()
-                .filterNot { it.hasClass("avatar") }
-                .mapNotNull { it.imageUrl() }
-                .firstOrNull()
-                .orEmpty()
-
-        private fun Element.imageUrl(): String? =
-            listOf("data-original", "data-src", "data-lazy-src")
-                .asSequence()
-                .map { name -> attr("abs:$name").trim() }
-                .firstOrNull { it.isArticleImageUrl() }
-                ?: listOf("data-srcset", "data-lazy-srcset", "srcset").asSequence()
-                    .mapNotNull { name -> attr(name).srcSetUrl(this) }
-                    .firstOrNull()
-                ?: attr("abs:src").trim().takeIf { it.isArticleImageUrl() }
-
-        private fun String.srcSetUrl(element: Element): String? =
-            split(",").asSequence()
-                    .map { it.trim().substringBefore(" ").trim() }
-                    .firstOrNull { it.isArticleImageUrl() }
-                    ?.let { runCatching { URI(element.baseUri()).resolve(it).toString() }.getOrDefault(it) }
-
-        private fun String.isArticleImageUrl(): Boolean =
-            isNotBlank() && !startsWith("data:", ignoreCase = true)
     }
 
     constructor(msg: String) : this(0, msg, null, null, null, null, 0, null, null, listOf())
@@ -378,7 +350,9 @@ data class Article(
                 parseID(e.attr("id")) ?: 0,
                 e.select("header .entry-title").text().trim(),
                 e.select("header .entry-title,.entry-meta a").attr("abs:href"),
-                image(e),
+                e.select(".entry-content img").let { img ->
+                    img.takeIf { it.hasClass("avatar") }?.let { "" } ?: img.attr("abs:src")
+                },
                 e.select(".entry-content p,.entry-summary p").firstOrNull()?.text()?.trim(),
                 e.select("time").attr("datetime").toDate(),
                 e.select("header .comments-link").text().trim().toIntOrNull() ?: 0,
