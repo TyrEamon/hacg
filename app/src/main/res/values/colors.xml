@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#1D1D1D</color>
-    <color name="primary_pressed">#FFF</color>
-    <color name="primary_dark">#000000</color>
-    <color name="ripple">#F06292</color>
-    <color name="accent">#45A700</color>
-    <color name="accent_pressed">#C2185B</color>
+    <color name="primary">#456731</color>
+    <color name="primary_pressed">#FFFFFF</color>
+    <color name="primary_dark">#2A4B18</color>
+    <color name="ripple">#AAD290</color>
+    <color name="accent">#456731</color>
+    <color name="accent_pressed">#2E4F1C</color>
 
     <color name="transparent">#0000</color>
-    <color name="background">#F8F8F8</color>
+    <color name="background">#F8FAF0</color>
 
-    <color name="text_color_title">#222</color>
-    <color name="text_color_content">#555</color>
-    <color name="text_color_summary">#888</color>
+    <color name="text_color_title">#191D16</color>
+    <color name="text_color_content">#43483E</color>
+    <color name="text_color_summary">#74796D</color>
 </resources>

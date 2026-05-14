@@ -1,6 +1,7 @@
 package io.github.yueeng.hacg
 
 import android.animation.ObjectAnimator
+import android.app.DownloadManager
 import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Context
@@ -8,6 +9,7 @@ import android.content.Intent
 import android.content.SearchRecentSuggestionsProvider
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.os.Parcelable
 import android.provider.SearchRecentSuggestions
 import android.text.method.LinkMovementMethod
@@ -104,13 +106,14 @@ class MainActivity : AppCompatActivity() {
                 gson.fromJson(it.first, JGitHubRelease::class.java)
             }
             val ver = Version.from(release?.tagName)
-            val apk = release?.assets?.firstOrNull { it.name == "app-release.apk" }?.browserDownloadUrl
+            val apk = release?.assets?.firstOrNull { it.name == "app-release.apk" }
+                ?: release?.assets?.firstOrNull { it.name.endsWith(".apk", ignoreCase = true) }
             val local = version()
             if (local != null && ver != null && local < ver) {
                 MaterialAlertDialogBuilder(this@MainActivity)
                     .setTitle(getString(R.string.app_update_new, local, ver))
                     .setMessage(release?.body ?: "")
-                    .setPositiveButton(R.string.app_update) { _, _ -> openUri(apk) }
+                    .setPositiveButton(R.string.app_update) { _, _ -> downloadUpdate(apk, ver) }
                     .setNeutralButton(R.string.app_publish) { _, _ -> openUri(HAcg.RELEASE) }
                     .setNegativeButton(R.string.app_cancel, null)
                     .create().show()
@@ -118,6 +121,35 @@ class MainActivity : AppCompatActivity() {
                 if (toast) Toast.makeText(this@MainActivity, getString(R.string.app_update_none, local), Toast.LENGTH_SHORT).show()
                 checkConfig()
             }
+        }
+    }
+
+    private fun downloadUpdate(asset: JGitHubReleaseAsset?, version: Version?) {
+        val releaseAsset = asset ?: run {
+            toast(R.string.app_update_download_missing)
+            return
+        }
+        val url = releaseAsset.browserDownloadUrl
+        if (url.isNullOrBlank()) {
+            toast(R.string.app_update_download_missing)
+            return
+        }
+        val fileName = "HAcg-${version ?: "update"}-${releaseAsset.name}"
+            .replace("""[\\/:*?"<>|\s]+""".toRegex(), "_")
+        try {
+            val request = DownloadManager.Request(Uri.parse(url))
+                .setTitle(getString(R.string.app_update_download_title))
+                .setDescription(fileName)
+                .setMimeType("application/vnd.android.package-archive")
+                .setAllowedOverMetered(true)
+                .setAllowedOverRoaming(true)
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+            val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            manager.enqueue(request)
+            toast(R.string.app_update_download_started)
+        } catch (e: Exception) {
+            toast(e.message ?: getString(R.string.app_update_download_failed))
         }
     }
 
