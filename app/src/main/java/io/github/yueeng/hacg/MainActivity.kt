@@ -424,6 +424,19 @@ class ArticleFragment : Fragment() {
     private val defurl: String
         get() = requireArguments().getString("url")!!.let { uri -> if (uri.startsWith("/")) "${HAcg.web}$uri" else uri }
 
+    private val isSearch: Boolean
+        get() = Uri.parse(defurl).getQueryParameter("s") != null
+
+    private suspend fun Article.withDetailCover(): Article? {
+        val html = link?.takeIf { it.isNotBlank() }?.httpGetAwait() ?: return null
+        val image = html.jsoup().select(".entry-content img").asSequence()
+            .filterNot { it.hasClass("avatar") }
+            .map { it.attr("abs:src").trim() }
+            .firstOrNull { it.isNotBlank() && !it.startsWith("data:", ignoreCase = true) }
+            ?: return null
+        return copy(image = image)
+    }
+
     private fun query(refresh: Boolean = false) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -444,6 +457,12 @@ class ArticleFragment : Fragment() {
         super.onCreate(savedInstanceState)
         viewModel.last.value?.let { adapter.last = it }
         viewModel.data.value?.let { adapter.addAll(it) }
+        if (isSearch) adapter.coverResolver = { article, update ->
+            lifecycleScope.launch {
+                val updated = withContext(Dispatchers.IO) { article.withDetailCover() }
+                if (updated != null) update(updated)
+            }
+        }
         if (adapter.itemCount == 0) query()
     }
 
@@ -557,13 +576,17 @@ class ArticleFragment : Fragment() {
 
     class ArticleAdapter : PagingAdapter<Article, ArticleHolder>(ArticleDiffCallback()) {
         var last: Int = -1
+        var coverResolver: (((Article, (Article) -> Unit) -> Unit))? = null
+        private val coverRequests = mutableSetOf<String>()
         private val interpolator = DecelerateInterpolator(3F)
         private val from: Float by lazy {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 200F, HAcgApplication.instance.resources.displayMetrics)
         }
 
         override fun onBindViewHolder(holder: ArticleHolder, position: Int) {
-            holder.article = data[position]
+            val item = data[position]
+            holder.article = item
+            maybeResolveCover(item)
             if (position > last) {
                 last = position
                 ObjectAnimator.ofFloat(holder.itemView, View.TRANSLATION_Y.name, from, 0F)
@@ -571,10 +594,30 @@ class ArticleFragment : Fragment() {
             }
         }
 
-        override fun clear(): DataAdapter<Article, ArticleHolder> = super.clear().apply { last = -1 }
+        override fun clear(): DataAdapter<Article, ArticleHolder> = super.clear().apply {
+            last = -1
+            coverRequests.clear()
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleHolder =
             ArticleHolder(ArticleItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+        private fun maybeResolveCover(article: Article) {
+            val resolver = coverResolver ?: return
+            if (!article.image.isNullOrBlank()) return
+            val key = article.coverKey() ?: return
+            if (!coverRequests.add(key)) return
+            resolver(article) { updated ->
+                val items = data.toMutableList()
+                val index = items.indexOfFirst { it.coverKey() == key }
+                if (index < 0 || !items[index].image.isNullOrBlank()) return@resolver
+                items[index] = updated
+                replaceAll(items)
+            }
+        }
+
+        private fun Article.coverKey(): String? = id.takeIf { it > 0 }?.let { "id:$it" }
+            ?: link?.takeIf { it.isNotBlank() }?.let { "url:$it" }
     }
 }
 
