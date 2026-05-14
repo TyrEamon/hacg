@@ -21,6 +21,7 @@
         <item name="actionOverflowMenuStyle">@style/Widget.AppCompat.PopupMenu.Overflow</item>
         <item name="tabStyle">@style/Widget.MaterialComponents.TabLayout.PrimarySurface</item>
         <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.HAcg.MaterialAlertDialog</item>
     </style>
 
     <style name="AppTheme" parent="AppThemeBase" />
@@ -45,5 +46,19 @@
         <item name="colorSurface">@color/primary</item>
         <item name="android:textColorPrimary">@color/toolbar_foreground</item>
         <item name="android:textColorSecondary">@color/toolbar_foreground_muted</item>
+    </style>
+
+    <style name="ThemeOverlay.HAcg.MaterialAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorOnSurface">@color/text_color_title</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.HAcg.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.HAcg.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.HAcg.DialogButton</item>
+    </style>
+
+    <style name="Widget.HAcg.DialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/accent</item>
+        <item name="iconTint">@color/accent</item>
+        <item name="rippleColor">@color/ripple</item>
     </style>
 </resources>
