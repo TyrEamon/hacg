@@ -47,13 +47,16 @@ object Favorites {
         return added
     }
 
-    private fun parse(json: String?): FavoritesFile? = try {
-        if (json.isNullOrBlank()) null else gson.fromJson(json, FavoritesFile::class.java)
-    } catch (_: Exception) {
-        try {
-            FavoritesFile(items = gson.fromJson(json ?: return null, Array<FavoriteArticle>::class.java).toList())
+    private fun parse(json: String?): FavoritesFile? {
+        if (json.isNullOrBlank()) return null
+        return try {
+            gson.fromJson(json, FavoritesFile::class.java)
         } catch (_: Exception) {
-            null
+            try {
+                FavoritesFile(items = gson.fromJson(json, Array<FavoriteArticle>::class.java).toList())
+            } catch (_: Exception) {
+                null
+            }
         }
     }
 
