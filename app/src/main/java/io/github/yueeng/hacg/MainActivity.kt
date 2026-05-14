@@ -46,11 +46,15 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
-private fun AppCompatActivity.setupSearchView(search: SearchView, initialQuery: String? = null, collapseOnSubmit: Boolean = false) {
+private fun AppCompatActivity.setupSearchView(searchItem: MenuItem, initialQuery: String? = null, collapseOnSubmit: Boolean = false) {
+    val search = searchItem.actionView as SearchView
     val manager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
     val info = manager.getSearchableInfo(ComponentName(this, ListActivity::class.java))
     search.setSearchableInfo(info)
-    initialQuery?.let { search.setQuery(it, false) }
+    initialQuery?.let {
+        searchItem.expandActionView()
+        search.setQuery(it, false)
+    }
     search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String?): Boolean {
             val key = query?.trim().orEmpty()
@@ -59,7 +63,13 @@ private fun AppCompatActivity.setupSearchView(search: SearchView, initialQuery: 
                 return true
             }
             startActivity(Intent(Intent.ACTION_SEARCH).setClass(this@setupSearchView, ListActivity::class.java).putExtra(SearchManager.QUERY, key))
-            if (collapseOnSubmit) search.onActionViewCollapsed() else search.clearFocus()
+            if (collapseOnSubmit) {
+                search.setQuery("", false)
+                search.clearFocus()
+                searchItem.collapseActionView()
+            } else {
+                search.clearFocus()
+            }
             return true
         }
 
@@ -136,8 +146,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-        val search = menu.findItem(R.id.search).actionView as SearchView
-        setupSearchView(search, collapseOnSubmit = true)
+        setupSearchView(menu.findItem(R.id.search), collapseOnSubmit = true)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -244,8 +253,7 @@ class ListActivity : SwipeFinishActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_list, menu)
-        val search = menu.findItem(R.id.search).actionView as SearchView
-        setupSearchView(search, searchQuery)
+        setupSearchView(menu.findItem(R.id.search), searchQuery)
         return super.onCreateOptionsMenu(menu)
     }
 
