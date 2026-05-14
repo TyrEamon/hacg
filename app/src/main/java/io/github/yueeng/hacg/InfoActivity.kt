@@ -9,7 +9,9 @@ import android.app.DownloadManager.Request
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -167,9 +169,21 @@ class InfoWebFragment : Fragment() {
 
                 fun showMagnets() {
                     val magnets = viewModel.magnet.value ?: emptyList()
-                    MaterialAlertDialogBuilder(activity!!)
+                    val accent = requireContext().getColor(R.color.accent)
+                    val itemText = requireContext().getColor(R.color.text_color_title)
+                    val items = magnets.map { m -> "${if (m.contains(",")) "baidu" else "magnet"}:$m" }
+                    val adapter = object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_single_choice, items) {
+                        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
+                            super.getView(position, convertView, parent).also { view ->
+                                (view as? CheckedTextView)?.apply {
+                                    setTextColor(itemText)
+                                    checkMarkTintList = ColorStateList.valueOf(accent)
+                                }
+                            }
+                    }
+                    MaterialAlertDialogBuilder(requireActivity())
                         .setTitle(R.string.app_magnet)
-                        .setSingleChoiceItems(magnets.map { m -> "${if (m.contains(",")) "baidu" else "magnet"}:$m" }.toTypedArray(), 0, null)
+                        .setSingleChoiceItems(adapter, 0, null)
                         .setNegativeButton(R.string.app_cancel, null)
                         .setPositiveButton(R.string.app_open) { d, _ ->
                             val pos = (d as AlertDialog).listView.checkedItemPosition
@@ -186,7 +200,16 @@ class InfoWebFragment : Fragment() {
                             val item = magnets[pos]
                             val link = if (item.contains(",")) "https://yun.baidu.com/s/${item.split(",").first()}" else "magnet:?xt=urn:btih:${magnets[pos]}"
                             context?.clipboard(getString(R.string.app_magnet), link)
-                        }.create().show()
+                        }
+                        .create()
+                        .apply {
+                            setOnShowListener {
+                                listOf(DialogInterface.BUTTON_NEGATIVE, DialogInterface.BUTTON_POSITIVE, DialogInterface.BUTTON_NEUTRAL).forEach { which ->
+                                    getButton(which)?.setTextColor(accent)
+                                }
+                            }
+                        }
+                        .show()
                     binding.menu1.close(true)
                 }
 
