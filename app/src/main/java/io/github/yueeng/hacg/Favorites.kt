@@ -26,15 +26,41 @@ object Favorites {
         return file.items.orEmpty().any { it.favoriteKey() == key }
     }
 
-    fun toggle(article: Article): Boolean {
+    fun toggle(article: Article, links: List<FavoriteLink> = emptyList()): Boolean {
         val key = article.favoriteKey() ?: return false
         val items = file.items.orEmpty().toMutableList()
         val index = items.indexOfFirst { it.favoriteKey() == key }
         val added = index < 0
-        if (added) items.add(0, FavoriteArticle(article)) else items.removeAt(index)
+        if (added) items.add(0, FavoriteArticle(article, links)) else items.removeAt(index)
         file = FavoritesFile(items = items)
         return added
     }
+
+    fun updateLinks(article: Article, links: List<FavoriteLink>) {
+        if (links.isEmpty()) return
+        val key = article.favoriteKey() ?: return
+        val items = file.items.orEmpty().toMutableList()
+        val index = items.indexOfFirst { it.favoriteKey() == key }
+        if (index < 0 || items[index].links == links) return
+        items[index] = items[index].copy(links = links)
+        file = FavoritesFile(items = items)
+    }
+
+    fun links(values: List<String>): List<FavoriteLink> = values.map { item ->
+        if (item.contains(",")) {
+            val baidu = item.split(",", limit = 2)
+            FavoriteLink(
+                type = "baidu",
+                url = "https://yun.baidu.com/s/${baidu.first()}",
+                code = baidu.getOrNull(1).orEmpty()
+            )
+        } else {
+            FavoriteLink(
+                type = "magnet",
+                value = "magnet:?xt=urn:btih:$item"
+            )
+        }
+    }.distinct()
 
     fun exportJson(): String = gson.toJson(file)
 
@@ -75,7 +101,7 @@ object Favorites {
 
 data class FavoritesFile(
     @SerializedName("version")
-    val version: Int = 1,
+    val version: Int = 2,
     @SerializedName("updatedAt")
     val updatedAt: Long = System.currentTimeMillis(),
     @SerializedName("items")
@@ -102,9 +128,11 @@ data class FavoriteArticle(
     @SerializedName("category")
     val category: Tag?,
     @SerializedName("tags")
-    val tags: List<Tag>?
+    val tags: List<Tag>?,
+    @SerializedName("links")
+    val links: List<FavoriteLink>? = emptyList()
 ) {
-    constructor(article: Article) : this(
+    constructor(article: Article, links: List<FavoriteLink> = emptyList()) : this(
         article.id,
         article.title,
         article.link,
@@ -114,7 +142,8 @@ data class FavoriteArticle(
         article.comments,
         article.author,
         article.category,
-        article.tags
+        article.tags,
+        links
     )
 
     fun toArticle(): Article = Article(
@@ -130,6 +159,17 @@ data class FavoriteArticle(
         tags.orEmpty()
     )
 }
+
+data class FavoriteLink(
+    @SerializedName("type")
+    val type: String,
+    @SerializedName("value")
+    val value: String? = null,
+    @SerializedName("url")
+    val url: String? = null,
+    @SerializedName("code")
+    val code: String? = null
+)
 
 object FavoriteWebDav {
     private const val URL = "favorite.webdav.url"

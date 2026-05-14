@@ -125,9 +125,14 @@ class InfoWebFragment : Fragment() {
                 binding.button6.setImageResource(if (favorite) R.drawable.ic_favorite else R.drawable.ic_favorite_border)
                 binding.button6.labelText = getString(if (favorite) R.string.favorite_remove else R.string.favorite_add)
             }
+            fun syncFavoriteLinks() {
+                val article = viewModel.article.value ?: return
+                Favorites.updateLinks(article, Favorites.links(viewModel.magnet.value.orEmpty()))
+            }
             viewModel.article.observe(viewLifecycleOwner) {
                 it?.title?.takeIf { i -> i.isNotEmpty() }?.let { t -> requireActivity().title = t }
                 refreshFavorite()
+                syncFavoriteLinks()
             }
             viewModel.error.observe(viewLifecycleOwner) { binding.image1.visibility = if (it) View.VISIBLE else View.INVISIBLE }
             binding.image1.setOnClickListener { query(_url) }
@@ -140,7 +145,7 @@ class InfoWebFragment : Fragment() {
 
                     R.id.button4 -> share()
                     R.id.button6 -> viewModel.article.value?.let {
-                        val added = Favorites.toggle(it)
+                        val added = Favorites.toggle(it, Favorites.links(viewModel.magnet.value.orEmpty()))
                         refreshFavorite()
                         activity?.toast(if (added) R.string.favorite_added else R.string.favorite_removed)
                     }
@@ -154,6 +159,7 @@ class InfoWebFragment : Fragment() {
             }
             viewModel.magnet.observe(viewLifecycleOwner) {
                 binding.button5.visibility = if (it.isNotEmpty()) View.VISIBLE else View.GONE
+                syncFavoriteLinks()
             }
             binding.button5.setOnClickListener(object : View.OnClickListener {
                 val max = 3
