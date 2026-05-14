@@ -15,6 +15,7 @@ import android.util.TypedValue
 import android.view.*
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
@@ -151,6 +152,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            R.id.favorites -> true.also {
+                startActivity(Intent(this, FavoriteActivity::class.java))
+            }
+
             R.id.user -> true.also {
                 startActivity(Intent(this, WebActivity::class.java).apply {
                     if (user != 0) putExtra("url", "${HAcg.philosophy}/profile/$user")
@@ -218,6 +223,89 @@ class ListActivity : SwipeFinishActivity() {
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+}
+
+class FavoriteActivity : SwipeFinishActivity() {
+    private val exportFavorites = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri ?: return@registerForActivityResult
+        try {
+            contentResolver.openOutputStream(uri)?.bufferedWriter(Charsets.UTF_8)?.use {
+                it.write(Favorites.exportJson())
+            }
+            toast(R.string.favorite_exported)
+        } catch (e: Exception) {
+            toast(e.message ?: getString(R.string.favorite_export_failed))
+        }
+    }
+
+    private val importFavorites = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri ?: return@registerForActivityResult
+        try {
+            val json = contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+            val count = Favorites.importJson(json ?: "")
+            reload()
+            toast(getString(R.string.favorite_imported, count))
+        } catch (e: Exception) {
+            toast(e.message ?: getString(R.string.favorite_import_failed))
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding = ActivityListBinding.inflate(layoutInflater)
+        setContentView(binding.root) {
+            setSupportActionBar(binding.toolbar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.favorite_title)
+            if (savedInstanceState == null) supportFragmentManager.beginTransaction()
+                .replace(R.id.container, FavoriteFragment())
+                .commit()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_favorites, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        android.R.id.home -> true.also { onBackPressedDispatcher.onBackPressed() }
+        R.id.favorite_export -> true.also { exportFavorites.launch("hacg-favorites.json") }
+        R.id.favorite_import -> true.also { importFavorites.launch(arrayOf("application/json", "text/plain", "*/*")) }
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun reload() {
+        (supportFragmentManager.findFragmentById(R.id.container) as? FavoriteFragment)?.reload()
+    }
+}
+
+class FavoriteFragment : Fragment() {
+    private val adapter by lazy { ArticleFragment.ArticleAdapter() }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        FragmentListBinding.inflate(inflater, container, false).apply {
+            recycler.setHasFixedSize(true)
+            recycler.adapter = adapter
+            image1.setOnClickListener { reload() }
+            swipe.setOnRefreshListener { reload() }
+            reload()
+        }.root
+
+    override fun onResume() {
+        super.onResume()
+        reload()
+    }
+
+    fun reload() {
+        val view = view ?: return
+        val binding = FragmentListBinding.bind(view)
+        val items = Favorites.all()
+        adapter.clear()
+        adapter.addAll(items)
+        binding.image1.visibility = if (items.isEmpty()) View.VISIBLE else View.INVISIBLE
+        binding.swipe.isRefreshing = false
     }
 }
 

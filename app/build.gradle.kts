@@ -22,9 +22,12 @@ android {
         resourceConfigurations.add("zh-rCN")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    val signingConfig = gradleLocalProperties(rootDir, providers)
+    val hasReleaseSigning = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+        .all { signingConfig.getProperty(it)?.isNotBlank() == true }
     signingConfigs {
-        create("release") {
-            val config = gradleLocalProperties(rootDir, providers)
+        if (hasReleaseSigning) create("release") {
+            val config = signingConfig
             storeFile = file(config.getProperty("storeFile"))
             storePassword = config.getProperty("storePassword")
             keyAlias = config.getProperty("keyAlias")
@@ -36,7 +39,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
         }
     }
     buildFeatures {

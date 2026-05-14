@@ -33,6 +33,18 @@
     <string name="app_user">User information</string>
     <string name="app_user_login">Login</string>
 
+    <string name="favorite_add">Favorite</string>
+    <string name="favorite_added">Added to favorites</string>
+    <string name="favorite_export">Export favorites</string>
+    <string name="favorite_export_failed">Export failed</string>
+    <string name="favorite_exported">Favorites exported</string>
+    <string name="favorite_import">Import favorites</string>
+    <string name="favorite_import_failed">Import failed</string>
+    <string name="favorite_imported">Imported %1$d favorites</string>
+    <string name="favorite_remove">Remove favorite</string>
+    <string name="favorite_removed">Removed from favorites</string>
+    <string name="favorite_title">Favorites</string>
+
     <string name="comment_author">Author</string>
     <string name="comment_content">Content</string>
     <string name="comment_email">EMail</string>

@@ -64,6 +64,14 @@
             app:fab_size="mini" />
 
         <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/button6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_favorite_border"
+            app:fab_label="@string/favorite_add"
+            app:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
             android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

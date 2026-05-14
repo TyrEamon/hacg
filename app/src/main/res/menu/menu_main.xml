@@ -22,6 +22,10 @@
         android:title="@string/app_search_clear"
         app:showAsAction="never" />
     <item
+        android:id="@+id/favorites"
+        android:title="@string/favorite_title"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/settings"
         android:title="@string/settings_host"
         app:showAsAction="never" />

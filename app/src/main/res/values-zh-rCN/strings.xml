@@ -33,6 +33,18 @@
     <string name="app_user">用户信息</string>
     <string name="app_user_login">登录</string>
 
+    <string name="favorite_add">收藏</string>
+    <string name="favorite_added">已收藏</string>
+    <string name="favorite_export">导出收藏</string>
+    <string name="favorite_export_failed">导出失败</string>
+    <string name="favorite_exported">收藏已导出</string>
+    <string name="favorite_import">导入收藏</string>
+    <string name="favorite_import_failed">导入失败</string>
+    <string name="favorite_imported">已导入 %1$d 条收藏</string>
+    <string name="favorite_remove">取消收藏</string>
+    <string name="favorite_removed">已取消收藏</string>
+    <string name="favorite_title">收藏</string>
+
     <string name="comment_author">姓名</string>
     <string name="comment_content">评论内容</string>
     <string name="comment_email">电子邮件</string>

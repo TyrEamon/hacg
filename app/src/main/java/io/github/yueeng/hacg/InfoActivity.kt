@@ -118,7 +118,16 @@ class InfoWebFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         FragmentInfoWebBinding.inflate(inflater, container, false).also { binding ->
-            viewModel.article.observe(viewLifecycleOwner) { it?.title?.takeIf { i -> i.isNotEmpty() }?.let { t -> requireActivity().title = t } }
+            fun refreshFavorite() {
+                val article = viewModel.article.value
+                val favorite = article?.let { Favorites.contains(it) } == true
+                binding.button6.setImageResource(if (favorite) R.drawable.ic_favorite else R.drawable.ic_favorite_border)
+                binding.button6.labelText = getString(if (favorite) R.string.favorite_remove else R.string.favorite_add)
+            }
+            viewModel.article.observe(viewLifecycleOwner) {
+                it?.title?.takeIf { i -> i.isNotEmpty() }?.let { t -> requireActivity().title = t }
+                refreshFavorite()
+            }
             viewModel.error.observe(viewLifecycleOwner) { binding.image1.visibility = if (it) View.VISIBLE else View.INVISIBLE }
             binding.image1.setOnClickListener { query(_url) }
             binding.menu1.setRandomColor()
@@ -129,10 +138,15 @@ class InfoWebFragment : Fragment() {
                         ?.findViewByViewType<ViewPager2>(R.id.container)?.firstOrNull()?.currentItem = 1
 
                     R.id.button4 -> share()
+                    R.id.button6 -> viewModel.article.value?.let {
+                        val added = Favorites.toggle(it)
+                        refreshFavorite()
+                        activity?.toast(if (added) R.string.favorite_added else R.string.favorite_removed)
+                    }
                 }
                 view?.findViewById<FloatingActionMenu>(R.id.menu1)?.close(true)
             }
-            listOf(binding.button1, binding.button2, binding.button4).forEach { it.setOnClickListener(click) }
+            listOf(binding.button1, binding.button2, binding.button4, binding.button6).forEach { it.setOnClickListener(click) }
             viewModel.progress.observe(viewLifecycleOwner) {
                 binding.progress.isIndeterminate = it
                 binding.progress.visibility = if (it) View.VISIBLE else View.INVISIBLE
@@ -220,7 +234,7 @@ class InfoWebFragment : Fragment() {
                 }
             }
             binding.web.addJavascriptInterface(JsFace(), "hacg")
-            listOf(binding.button1, binding.button2, binding.button4, binding.button5).forEach { b ->
+            listOf(binding.button1, binding.button2, binding.button4, binding.button5, binding.button6).forEach { b ->
                 b.setRandomColor()
             }
             viewModel.web.observe(viewLifecycleOwner) { value ->

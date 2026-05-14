@@ -1,0 +1,73 @@
+name: Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: APK build type
+        required: true
+        default: debug
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: ${{ inputs.build_type }}
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Prepare release signing
+        shell: bash
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > release.keystore
+            {
+              echo "storeFile=release.keystore"
+              echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+              echo "keyAlias=$ANDROID_KEY_ALIAS"
+              echo "keyPassword=$ANDROID_KEY_PASSWORD"
+            } > local.properties
+          elif [ "$BUILD_TYPE" = "release" ]; then
+            echo "::warning::Release signing secrets are not configured. The release artifact will be unsigned."
+          fi
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Build APK
+        shell: bash
+        run: |
+          task="assemble${BUILD_TYPE^}"
+          ./gradlew ":app:$task" --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hacg-${{ inputs.build_type }}-apk
+          path: |
+            app/build/outputs/apk/**/*.apk
+            release/*.apk
+          if-no-files-found: error
