@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.yueeng.hacg"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 42
         versionName = "1.5.6"
