@@ -527,9 +527,9 @@ class ArticleFragment : Fragment() {
             var chars = 0
             for (tag in all) {
                 val next = chars + tag.name.length + if (tags.isEmpty()) 0 else 1
-                if (tags.isNotEmpty() && next > 45) break
                 tags += tag
                 chars = next
+                if (chars >= 45) break
             }
             val hidden = all.size - tags.size
             return if (hidden > 0) tags + Tag("+$hidden", "") else tags
