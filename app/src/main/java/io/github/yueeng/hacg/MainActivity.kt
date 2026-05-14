@@ -89,7 +89,7 @@ private fun AppCompatActivity.setupSearchView(searchItem: MenuItem, initialQuery
 private fun Drawable.tinted(color: Int): Drawable =
     DrawableCompat.wrap(mutate()).also { DrawableCompat.setTint(it, color) }
 
-private fun AppCompatActivity.tintToolbarIcons(menu: Menu, vararg itemIds: Int) {
+fun AppCompatActivity.tintToolbarIcons(menu: Menu, vararg itemIds: Int) {
     val color = getColor(R.color.toolbar_foreground)
     itemIds.forEach { id ->
         menu.findItem(id)?.let { item -> item.icon = item.icon?.tinted(color) }

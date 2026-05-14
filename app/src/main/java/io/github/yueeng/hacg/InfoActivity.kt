@@ -51,6 +51,14 @@ import java.util.*
  * Created by Rain on 2015/5/12.
  */
 
+private fun Context.colorHex(resId: Int): String = "#%06X".format(getColor(resId) and 0xFFFFFF)
+
+private fun Context.applyThemeToHtml(html: String): String =
+    html.replace("{{backgroundColor}}", colorHex(R.color.background))
+        .replace("{{titleColor}}", colorHex(R.color.text_color_title))
+        .replace("{{contentColor}}", colorHex(R.color.text_color_content))
+        .replace("{{accentColor}}", colorHex(R.color.accent))
+
 class InfoActivity : SwipeFinishActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,9 +75,21 @@ class InfoActivity : SwipeFinishActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_info, menu)
+        tintToolbarIcons(menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         android.R.id.home -> true.also {
             onBackPressedDispatcher.onBackPressed()
+        }
+
+        R.id.theme_mode -> true.also {
+            val mode = getString(ThemeMode.cycle())
+            toast(getString(R.string.app_theme_changed, mode))
+            ThemeMode.applySaved()
         }
 
         else -> super.onOptionsItemSelected(item)
@@ -83,6 +103,7 @@ class InfoFragment : Fragment() {
             activity.setSupportActionBar(binding.toolbar)
             activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
             binding.container.adapter = InfoAdapter(this)
+            activity.invalidateOptionsMenu()
         }.root
 
     inner class InfoAdapter(fm: Fragment) : FragmentStateAdapter(fm) {
@@ -224,6 +245,7 @@ class InfoWebFragment : Fragment() {
                 }
             })
             CookieManager.getInstance().acceptThirdPartyCookies(binding.web)
+            binding.web.setBackgroundColor(requireContext().getColor(R.color.background))
             val settings = binding.web.settings
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             @SuppressLint("SetJavaScriptEnabled")
@@ -267,7 +289,7 @@ class InfoWebFragment : Fragment() {
                 b.setRandomColor()
             }
             viewModel.web.observe(viewLifecycleOwner) { value ->
-                if (value != null) binding.web.loadDataWithBaseURL(value.second, value.first, "text/html", "utf-8", null)
+                if (value != null) binding.web.loadDataWithBaseURL(value.second, requireContext().applyThemeToHtml(value.first), "text/html", "utf-8", null)
             }
         }.root
 
