@@ -1,6 +1,12 @@
 package io.github.yueeng.hacg
 
 import androidx.preference.PreferenceManager
+import com.google.gson.annotations.SerializedName
+import okhttp3.Credentials
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 import java.util.Date
 
 object Favorites {
@@ -68,21 +74,34 @@ object Favorites {
 }
 
 data class FavoritesFile(
+    @SerializedName("version")
     val version: Int = 1,
+    @SerializedName("updatedAt")
     val updatedAt: Long = System.currentTimeMillis(),
+    @SerializedName("items")
     val items: List<FavoriteArticle>? = emptyList()
 )
 
 data class FavoriteArticle(
+    @SerializedName("id")
     val id: Int,
+    @SerializedName("title")
     val title: String?,
+    @SerializedName("link")
     val link: String?,
+    @SerializedName("image")
     val image: String?,
+    @SerializedName("content")
     val content: String?,
+    @SerializedName("time")
     val time: Long?,
+    @SerializedName("comments")
     val comments: Int,
+    @SerializedName("author")
     val author: Tag?,
+    @SerializedName("category")
     val category: Tag?,
+    @SerializedName("tags")
     val tags: List<Tag>?
 ) {
     constructor(article: Article) : this(
@@ -110,4 +129,65 @@ data class FavoriteArticle(
         category,
         tags.orEmpty()
     )
+}
+
+object FavoriteWebDav {
+    private const val URL = "favorite.webdav.url"
+    private const val USERNAME = "favorite.webdav.username"
+    private const val PASSWORD = "favorite.webdav.password"
+    private const val PATH = "favorite.webdav.path"
+    private const val DEFAULT_PATH = "hacg-favorites.json"
+
+    private val preference
+        get() = PreferenceManager.getDefaultSharedPreferences(HAcgApplication.instance)
+
+    fun config(): FavoriteWebDavConfig = FavoriteWebDavConfig(
+        preference.getString(URL, "") ?: "",
+        preference.getString(USERNAME, "") ?: "",
+        preference.getString(PASSWORD, "") ?: "",
+        preference.getString(PATH, DEFAULT_PATH)?.ifBlank { DEFAULT_PATH } ?: DEFAULT_PATH
+    )
+
+    fun save(config: FavoriteWebDavConfig) {
+        preference.edit()
+            .putString(URL, config.url.trim())
+            .putString(USERNAME, config.username.trim())
+            .putString(PASSWORD, config.password)
+            .putString(PATH, config.path.trim().ifBlank { DEFAULT_PATH })
+            .apply()
+    }
+
+    fun upload(config: FavoriteWebDavConfig, json: String) {
+        val body = json.toRequestBody("application/json; charset=utf-8".toMediaType())
+        val request = request(config).put(body).build()
+        okhttp.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw IOException("WebDAV ${response.code}: ${response.message}")
+        }
+    }
+
+    fun download(config: FavoriteWebDavConfig): String {
+        val request = request(config).get().build()
+        okhttp.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw IOException("WebDAV ${response.code}: ${response.message}")
+            return response.body?.string() ?: throw IOException("WebDAV empty response")
+        }
+    }
+
+    private fun request(config: FavoriteWebDavConfig): Request.Builder =
+        Request.Builder().url(config.fileUrl()).apply {
+            if (config.username.isNotBlank() || config.password.isNotBlank()) {
+                header("Authorization", Credentials.basic(config.username, config.password))
+            }
+        }
+}
+
+data class FavoriteWebDavConfig(
+    val url: String,
+    val username: String,
+    val password: String,
+    val path: String
+) {
+    val ready: Boolean get() = url.isNotBlank() && path.isNotBlank()
+
+    fun fileUrl(): String = "${url.trim().trimEnd('/')}/${path.trim().trimStart('/')}"
 }

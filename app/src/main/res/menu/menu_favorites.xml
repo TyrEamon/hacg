@@ -9,4 +9,16 @@
         android:id="@+id/favorite_export"
         android:title="@string/favorite_export"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/favorite_webdav_settings"
+        android:title="@string/favorite_webdav_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/favorite_webdav_upload"
+        android:title="@string/favorite_webdav_upload"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/favorite_webdav_download"
+        android:title="@string/favorite_webdav_download"
+        app:showAsAction="never" />
 </menu>

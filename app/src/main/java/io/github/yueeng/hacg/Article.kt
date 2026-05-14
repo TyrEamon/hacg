@@ -220,7 +220,10 @@ data class Version(val ver: List<Int>) {
 }
 
 @Parcelize
-data class Tag(val name: String, val url: String) : Parcelable {
+data class Tag(
+    @SerializedName("name") val name: String,
+    @SerializedName("url") val url: String
+) : Parcelable {
     constructor(e: Element) :
             this(e.text(), e.attr("abs:href"))
 }

@@ -44,6 +44,16 @@
     <string name="favorite_remove">取消收藏</string>
     <string name="favorite_removed">已取消收藏</string>
     <string name="favorite_title">收藏</string>
+    <string name="favorite_webdav_download">从 WebDAV 导入</string>
+    <string name="favorite_webdav_failed">WebDAV 操作失败</string>
+    <string name="favorite_webdav_password">密码</string>
+    <string name="favorite_webdav_path">远程文件路径</string>
+    <string name="favorite_webdav_required">请先配置 WebDAV</string>
+    <string name="favorite_webdav_settings">WebDAV 设置</string>
+    <string name="favorite_webdav_upload">上传到 WebDAV</string>
+    <string name="favorite_webdav_uploaded">已上传到 WebDAV</string>
+    <string name="favorite_webdav_url">WebDAV 地址</string>
+    <string name="favorite_webdav_username">用户名</string>
 
     <string name="comment_author">姓名</string>
     <string name="comment_content">评论内容</string>

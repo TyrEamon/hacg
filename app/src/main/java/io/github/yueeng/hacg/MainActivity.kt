@@ -273,11 +273,76 @@ class FavoriteActivity : SwipeFinishActivity() {
         android.R.id.home -> true.also { onBackPressedDispatcher.onBackPressed() }
         R.id.favorite_export -> true.also { exportFavorites.launch("hacg-favorites.json") }
         R.id.favorite_import -> true.also { importFavorites.launch(arrayOf("application/json", "text/plain", "*/*")) }
+        R.id.favorite_webdav_settings -> true.also { webDavSettings() }
+        R.id.favorite_webdav_upload -> true.also { webDavUpload() }
+        R.id.favorite_webdav_download -> true.also { webDavDownload() }
         else -> super.onOptionsItemSelected(item)
     }
 
     private fun reload() {
         (supportFragmentManager.findFragmentById(R.id.container) as? FavoriteFragment)?.reload()
+    }
+
+    private fun webDavSettings() {
+        val config = FavoriteWebDav.config()
+        val binding = FavoriteWebdavBinding.inflate(layoutInflater)
+        binding.edit1.setText(config.url)
+        binding.edit2.setText(config.username)
+        binding.edit3.setText(config.password)
+        binding.edit4.setText(config.path)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.favorite_webdav_settings)
+            .setView(binding.root)
+            .setPositiveButton(R.string.app_save) { _, _ ->
+                FavoriteWebDav.save(
+                    FavoriteWebDavConfig(
+                        binding.edit1.text?.toString() ?: "",
+                        binding.edit2.text?.toString() ?: "",
+                        binding.edit3.text?.toString() ?: "",
+                        binding.edit4.text?.toString() ?: ""
+                    )
+                )
+                toast(R.string.app_save)
+            }
+            .setNegativeButton(R.string.app_cancel, null)
+            .create().show()
+    }
+
+    private fun webDavConfigOrEdit(): FavoriteWebDavConfig? {
+        val config = FavoriteWebDav.config()
+        if (config.ready) return config
+        toast(R.string.favorite_webdav_required)
+        webDavSettings()
+        return null
+    }
+
+    private fun webDavUpload() {
+        val config = webDavConfigOrEdit() ?: return
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    FavoriteWebDav.upload(config, Favorites.exportJson())
+                }
+                toast(R.string.favorite_webdav_uploaded)
+            } catch (e: Exception) {
+                toast(e.message ?: getString(R.string.favorite_webdav_failed))
+            }
+        }
+    }
+
+    private fun webDavDownload() {
+        val config = webDavConfigOrEdit() ?: return
+        lifecycleScope.launch {
+            try {
+                val count = withContext(Dispatchers.IO) {
+                    Favorites.importJson(FavoriteWebDav.download(config))
+                }
+                reload()
+                toast(getString(R.string.favorite_imported, count))
+            } catch (e: Exception) {
+                toast(e.message ?: getString(R.string.favorite_webdav_failed))
+            }
+        }
     }
 }
 

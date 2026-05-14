@@ -44,6 +44,16 @@
     <string name="favorite_remove">Remove favorite</string>
     <string name="favorite_removed">Removed from favorites</string>
     <string name="favorite_title">Favorites</string>
+    <string name="favorite_webdav_download">Import from WebDAV</string>
+    <string name="favorite_webdav_failed">WebDAV operation failed</string>
+    <string name="favorite_webdav_password">Password</string>
+    <string name="favorite_webdav_path">Remote file path</string>
+    <string name="favorite_webdav_required">Please configure WebDAV first</string>
+    <string name="favorite_webdav_settings">WebDAV settings</string>
+    <string name="favorite_webdav_upload">Upload to WebDAV</string>
+    <string name="favorite_webdav_uploaded">Uploaded to WebDAV</string>
+    <string name="favorite_webdav_url">WebDAV URL</string>
+    <string name="favorite_webdav_username">Username</string>
 
     <string name="comment_author">Author</string>
     <string name="comment_content">Content</string>
