@@ -59,6 +59,16 @@ private fun Context.applyThemeToHtml(html: String): String =
         .replace("{{contentColor}}", colorHex(R.color.text_color_content))
         .replace("{{accentColor}}", colorHex(R.color.accent))
 
+private object InfoThemeReload {
+    private var pending = false
+
+    fun request() {
+        pending = true
+    }
+
+    fun consume(): Boolean = pending.also { pending = false }
+}
+
 class InfoActivity : SwipeFinishActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,6 +99,7 @@ class InfoActivity : SwipeFinishActivity() {
         R.id.theme_mode -> true.also {
             val mode = getString(ThemeMode.cycle())
             toast(getString(R.string.app_theme_changed, mode))
+            InfoThemeReload.request()
             ThemeMode.applySaved()
         }
 
@@ -295,7 +306,9 @@ class InfoWebFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (viewModel.web.value == null) query(_url)
+        val forceReload = InfoThemeReload.consume()
+        val missingContent = viewModel.web.value == null
+        if (forceReload || missingContent) query(_url, force = forceReload || missingContent)
     }
 
     override fun onDestroyView() {
@@ -374,8 +387,8 @@ class InfoWebFragment : Fragment() {
         }
     }
 
-    private fun query(url: String) {
-        if (viewModel.progress.value == true) return
+    private fun query(url: String, force: Boolean = false) {
+        if (!force && viewModel.progress.value == true) return
         viewModel.error.postValue(false)
         viewModel.progress.postValue(true)
         lifecycleScope.launch {
