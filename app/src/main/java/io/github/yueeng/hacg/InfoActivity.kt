@@ -293,8 +293,8 @@ class InfoWebFragment : Fragment() {
             }
         }.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         if (viewModel.web.value == null) query(_url)
     }
 
