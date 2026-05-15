@@ -9,7 +9,7 @@
         app:showAsAction="ifRoom|collapseActionView" />
     <item
         android:id="@+id/philosophy"
-        android:icon="@drawable/ic_philosophy"
+        android:icon="@drawable/philosophy"
         android:title="@string/app_philosophy"
         app:showAsAction="ifRoom" />
     <item

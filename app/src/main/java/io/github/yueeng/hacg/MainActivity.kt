@@ -273,7 +273,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         setupSearchView(menu.findItem(R.id.search), collapseOnSubmit = true)
-        tintToolbarIcons(menu, R.id.search, R.id.philosophy, R.id.user)
+        tintToolbarIcons(menu, R.id.search, R.id.user)
         return super.onCreateOptionsMenu(menu)
     }
 
