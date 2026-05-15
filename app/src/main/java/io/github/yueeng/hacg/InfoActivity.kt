@@ -51,6 +51,14 @@ import java.util.*
  * Created by Rain on 2015/5/12.
  */
 
+private fun Context.colorHex(resId: Int): String = "#%06X".format(getColor(resId) and 0xFFFFFF)
+
+private fun Context.applyThemeToHtml(html: String): String =
+    html.replace("{{backgroundColor}}", colorHex(R.color.background))
+        .replace("{{titleColor}}", colorHex(R.color.text_color_title))
+        .replace("{{contentColor}}", colorHex(R.color.text_color_content))
+        .replace("{{accentColor}}", colorHex(R.color.accent))
+
 class InfoActivity : SwipeFinishActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -224,6 +232,7 @@ class InfoWebFragment : Fragment() {
                 }
             })
             CookieManager.getInstance().acceptThirdPartyCookies(binding.web)
+            binding.web.setBackgroundColor(requireContext().getColor(R.color.background))
             val settings = binding.web.settings
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             @SuppressLint("SetJavaScriptEnabled")
@@ -267,7 +276,7 @@ class InfoWebFragment : Fragment() {
                 b.setRandomColor()
             }
             viewModel.web.observe(viewLifecycleOwner) { value ->
-                if (value != null) binding.web.loadDataWithBaseURL(value.second, value.first, "text/html", "utf-8", null)
+                if (value != null) binding.web.loadDataWithBaseURL(value.second, requireContext().applyThemeToHtml(value.first), "text/html", "utf-8", null)
             }
         }.root
 
